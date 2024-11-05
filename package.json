@@ -1,0 +1,13 @@
+{
+  "name": "semantic-desktop-search-workspace",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun run --cwd apps/semantic-desktop-search dev",
+    "build": "bun run --cwd apps/semantic-desktop-search build",
+    "lint": "bun run --cwd apps/semantic-desktop-search lint"
+  }
+}
