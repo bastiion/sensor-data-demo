@@ -1,25 +1,23 @@
 import { Input, InputGroup, InputLeftElement } from "@chakra-ui/react"
 import { SearchIcon } from "@chakra-ui/icons"
+import { useSearchStore } from "../../store/useSearchStore"
 
 interface SearchProps {
   placeholder?: string
-  value?: string
-  onChange?: (value: string) => void
 }
 
 export const Search = ({ 
-  placeholder = "Search...", 
-  value, 
-  onChange 
+  placeholder = "Search..." 
 }: SearchProps) => {
+  const { searchQuery, setSearchQuery } = useSearchStore()
   return (
     <InputGroup>
       <InputLeftElement pointerEvents="none">
         <SearchIcon color="gray.400" />
       </InputLeftElement>
       <Input
-        value={value}
-        onChange={(e) => onChange?.(e.target.value)}
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
         placeholder={placeholder}
         size="lg"
         variant="filled"
@@ -32,3 +30,14 @@ export const Search = ({
     </InputGroup>
   )
 }
+import { create } from 'zustand'
+
+interface SearchState {
+  searchQuery: string
+  setSearchQuery: (query: string) => void
+}
+
+export const useSearchStore = create<SearchState>((set) => ({
+  searchQuery: '',
+  setSearchQuery: (query) => set({ searchQuery: query }),
+}))
