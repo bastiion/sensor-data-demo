@@ -1,6 +1,21 @@
-import { Input, InputGroup, InputLeftElement, Box } from "@chakra-ui/react"
-import { SearchIcon } from "@chakra-ui/icons"
-import { useSearchStore } from "../../store/useSearchStore"
+import { HStack, Input, Kbd } from "@chakra-ui/react"
+import { InputGroup } from "@/components/ui/input-group"
+import {
+  NativeSelectField,
+  NativeSelectRoot,
+} from "@/components/ui/native-select"
+import { LuSearch } from "react-icons/lu"
+import { useSearchStore } from "@/store/useSearchStore"
+
+const DomainSelect = () => (
+  <NativeSelectRoot size="xs" variant="plain" width="auto" me="-1">
+    <NativeSelectField defaultValue=".com" fontSize="sm">
+      <option value=".com">.com</option>
+      <option value=".org">.org</option>
+      <option value=".net">.net</option>
+    </NativeSelectField>
+  </NativeSelectRoot>
+)
 
 interface SearchProps {
   placeholder?: string
@@ -10,27 +25,24 @@ export const Search = ({
   placeholder = "Search..." 
 }: SearchProps) => {
   const { searchQuery, setSearchQuery } = useSearchStore()
-  const isSearching = searchQuery.length > 3
 
   return (
-    <Box width="100%" transition="all 0.3s">
-      <InputGroup>
-        <InputLeftElement pointerEvents="none">
-          <SearchIcon color="gray.400" />
-        </InputLeftElement>
-        <Input
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={placeholder}
-          size={isSearching ? "md" : "lg"}
-          variant="filled"
-          bg="white"
-          _hover={{ bg: "gray.50" }}
-          _focus={{ bg: "white", borderColor: "blue.500" }}
-          borderRadius="full"
-          boxShadow="sm"
-        />
+    <HStack gap="10" width="full">
+      <InputGroup
+        flex="1"
+        startElement={<LuSearch />}
+        endElement={<Kbd>⌘K</Kbd>}
+      >
+        <Input placeholder={placeholder} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
       </InputGroup>
-    </Box>
+
+      <InputGroup
+        flex="1"
+        startElement="https://"
+        endElement={<DomainSelect />}
+      >
+        <Input ps="4.75em" pe="0" placeholder="yoursite.com" />
+      </InputGroup>
+    </HStack>
   )
 }
