@@ -4,7 +4,6 @@ import { GalleryView as GalleryViewComponent } from '@/components/ui/gallery-vie
 import { ViewProps, ViewDefinition } from './types'
 import { useRegisterView } from './hooks/useRegisterView'
 import { useSearchResults } from '@/hooks/useSearchResults'
-import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 export const galleryViewDefinition: ViewDefinition = {
   viewType: 'gallery',
@@ -23,9 +22,7 @@ export const GalleryView = (_props: ViewProps) => {
 
   return (
     <Box height="100%" width="100%" overflow="auto" bg="bg">
-      <ErrorBoundary>
-        <GalleryViewComponent images={results} />
-      </ErrorBoundary>
+      <GalleryViewComponent images={results} />
     </Box>
   )
 }

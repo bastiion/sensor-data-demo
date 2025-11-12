@@ -1,11 +1,12 @@
 import React, { Component, ReactNode } from 'react'
 import { Box, Text, VStack } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
-import { LuX } from 'react-icons/lu'
+import { LuX, LuRefreshCw } from 'react-icons/lu'
 
 interface Props {
   children: ReactNode
   fallback?: ReactNode
+  onReset?: () => void
 }
 
 interface State {
@@ -29,6 +30,9 @@ export class ErrorBoundary extends Component<Props, State> {
 
   handleReset = () => {
     this.setState({ hasError: false, error: undefined })
+    if (this.props.onReset) {
+      this.props.onReset()
+    }
   }
 
   render() {
@@ -57,8 +61,15 @@ export class ErrorBoundary extends Component<Props, State> {
             <Text fontSize="sm" color="fg.muted" textAlign="center">
               {this.state.error?.message || 'An error occurred while rendering this view'}
             </Text>
-            <Button onClick={this.handleReset} variant="solid" colorScheme="blue">
-              Try Again
+            <Button 
+              onClick={this.handleReset} 
+              variant="solid" 
+              bg="blue.500"
+              color="white"
+              _hover={{ bg: 'blue.600' }}
+            >
+              <LuRefreshCw size={16} style={{ marginRight: '8px' }} />
+              Reload View
             </Button>
           </VStack>
         </Box>

@@ -12,6 +12,7 @@ import { useViewRegistry } from '@/views/ViewRegistry'
 import { TileToolbar } from '@/components/TileToolbar'
 import { CustomLightbox } from '@/components/ui/custom-light-box'
 import { ChakraColorModeSync } from '@/components/ChakraColorModeSync'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 type ViewId = string
 
@@ -38,6 +39,9 @@ const MosaicView = () => {
 
   // Track which tiles have been initialized
   const [initializedTiles, setInitializedTiles] = useState<Set<string>>(new Set())
+  
+  // Track error boundary reset keys for each tile
+  const [errorBoundaryKeys, setErrorBoundaryKeys] = useState<Record<string, number>>({})
 
   // Render each window based on its ViewId
   const renderTile = useCallback(
@@ -90,6 +94,14 @@ const MosaicView = () => {
         )
       }
 
+      // Handler to reset error boundary for this tile
+      const handleResetError = () => {
+        setErrorBoundaryKeys((prev) => ({
+          ...prev,
+          [tileId]: (prev[tileId] || 0) + 1,
+        }))
+      }
+
       return (
         <MosaicWindow
           path={path}
@@ -103,13 +115,16 @@ const MosaicView = () => {
             />
           }
         >
-          <ViewComponent instanceId={instance.instanceId} filterEnabled={instance.filterEnabled} />
+          <ErrorBoundary key={errorBoundaryKeys[tileId] || 0} onReset={handleResetError}>
+            <ViewComponent instanceId={instance.instanceId} filterEnabled={instance.filterEnabled} />
+          </ErrorBoundary>
         </MosaicWindow>
       )
     },
     [
       viewInstances,
       initializedTiles,
+      errorBoundaryKeys,
       getViewComponent,
       getViewDefinition,
       dispatch,
