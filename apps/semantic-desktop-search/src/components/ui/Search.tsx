@@ -1,48 +1,62 @@
 import { HStack, Input, Kbd } from "@chakra-ui/react"
 import { InputGroup } from "@/components/ui/input-group"
-import {
-  NativeSelectField,
-  NativeSelectRoot,
-} from "@/components/ui/native-select"
 import { LuSearch } from "react-icons/lu"
 import { useSearchStore } from "@/store/useSearchStore"
-
-const DomainSelect = () => (
-  <NativeSelectRoot size="xs" variant="plain" width="auto" me="-1">
-    <NativeSelectField defaultValue=".com" fontSize="sm">
-      <option value=".com">.com</option>
-      <option value=".org">.org</option>
-      <option value=".net">.net</option>
-    </NativeSelectField>
-  </NativeSelectRoot>
-)
+import { useCallback, useEffect, useState } from "react"
+import debounce from "lodash/debounce"
 
 interface SearchProps {
   placeholder?: string
 }
 
-export const Search = ({ 
-  placeholder = "Search..." 
+export const Search = ({
+  placeholder = "Search..."
 }: SearchProps) => {
-  const { searchQuery, setSearchQuery } = useSearchStore()
+  const { searchQuery, setSearchQuery, pageSize, setPageSize } = useSearchStore()
+  const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery)
+
+  useEffect(() => {
+    setLocalSearchQuery(searchQuery)
+  }, [searchQuery])
+
+  const onSearchChange = useCallback(debounce((value: string) => {
+    setSearchQuery(value)
+  }, 300), [setSearchQuery])
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalSearchQuery(e.target.value)
+    onSearchChange(e.target.value)
+  }
 
   return (
-    <HStack gap="10" width="full">
+    <HStack justify="center" width="full">
       <InputGroup
-        flex="1"
-        startElement={<LuSearch />}
-        endElement={<Kbd>⌘K</Kbd>}
+        width="60%"
+        startElement={<LuSearch size={32} />}
+        endElement={
+          <Kbd fontSize="xl">⌘K</Kbd>
+        }
       >
-        <Input placeholder={placeholder} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+        <Input
+          size="2xl"
+          placeholder={placeholder}
+          value={localSearchQuery}
+          onChange={handleSearchChange}
+          fontSize="2xl"
+        />
       </InputGroup>
-
-      <InputGroup
-        flex="1"
-        startElement="https://"
-        endElement={<DomainSelect />}
-      >
-        <Input ps="4.75em" pe="0" placeholder="yoursite.com" />
-      </InputGroup>
+      <Input
+        width="120px"
+        size="2xl"
+        type="number"
+        value={pageSize}
+        onChange={(e) => setPageSize(Number(e.target.value))}
+        placeholder="Size"
+        fontSize="xl"
+        opacity="0.5"
+        _hover={{ opacity: 1 }}
+        transition="opacity 0.2s"
+      />
     </HStack>
   )
 }

@@ -1,0 +1,171 @@
+/* Custom theme for react-mosaic-component */
+/* This provides basic styling without requiring Blueprint */
+/* Integrates with Chakra UI color mode via data-theme attribute */
+
+.mosaic-blueprint-theme {
+  --mosaic-background: #f5f5f5;
+  --mosaic-foreground: #333333;
+  --mosaic-border: #d0d0d0;
+  --mosaic-toolbar-bg: #ffffff;
+  --mosaic-toolbar-hover: #e8e8e8;
+  --mosaic-button-hover: #e0e0e0;
+}
+
+/* Dark mode support - using data-theme attribute from next-themes */
+[data-theme="dark"] .mosaic-blueprint-theme,
+.dark .mosaic-blueprint-theme {
+  --mosaic-background: #1e1e1e;
+  --mosaic-foreground: #e0e0e0;
+  --mosaic-border: #404040;
+  --mosaic-toolbar-bg: #2d2d2d;
+  --mosaic-toolbar-hover: #3a3a3a;
+  --mosaic-button-hover: #404040;
+}
+
+/* Fallback for system preference dark mode */
+@media (prefers-color-scheme: dark) {
+  .mosaic-blueprint-theme {
+    --mosaic-background: #1e1e1e;
+    --mosaic-foreground: #e0e0e0;
+    --mosaic-border: #404040;
+    --mosaic-toolbar-bg: #2d2d2d;
+    --mosaic-toolbar-hover: #3a3a3a;
+    --mosaic-button-hover: #404040;
+  }
+}
+
+/* Mosaic container */
+.mosaic-blueprint-theme .mosaic {
+  background-color: var(--mosaic-background);
+}
+
+/* Window styling */
+.mosaic-blueprint-theme .mosaic-window {
+  background-color: var(--mosaic-toolbar-bg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Toolbar */
+.mosaic-blueprint-theme .mosaic-window-toolbar {
+  background-color: var(--mosaic-toolbar-bg);
+  border-bottom: 1px solid var(--mosaic-border);
+  padding: 4px 8px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mosaic-blueprint-theme .mosaic-window-title {
+  color: var(--mosaic-foreground);
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Window body - let Chakra components handle their own backgrounds */
+.mosaic-blueprint-theme .mosaic-window-body {
+  background-color: transparent;
+  height: calc(100% - 40px);
+  overflow: hidden;
+}
+
+/* Toolbar controls */
+.mosaic-blueprint-theme .mosaic-window-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.mosaic-blueprint-theme .mosaic-window-toolbar button {
+  background-color: transparent;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: var(--mosaic-foreground);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  transition: background-color 0.15s ease;
+}
+
+.mosaic-blueprint-theme .mosaic-window-toolbar button:hover {
+  background-color: var(--mosaic-button-hover);
+}
+
+.mosaic-blueprint-theme .mosaic-window-toolbar button:active {
+  opacity: 0.8;
+}
+
+/* Drag handle */
+.mosaic-blueprint-theme .mosaic-window-toolbar .mosaic-window-title {
+  cursor: move;
+  user-select: none;
+}
+
+/* Split lines between windows */
+.mosaic-blueprint-theme .mosaic-split {
+  background-color: var(--mosaic-border);
+}
+
+.mosaic-blueprint-theme .mosaic-split:hover {
+  background-color: #0066cc;
+}
+
+/* Drop target styling */
+.mosaic-blueprint-theme .mosaic-drop-target {
+  background-color: rgba(0, 102, 204, 0.2);
+  border: 2px dashed #0066cc;
+}
+
+/* Preview while dragging */
+.mosaic-blueprint-theme .mosaic-preview {
+  background-color: var(--mosaic-toolbar-bg);
+  border: 1px solid var(--mosaic-border);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  opacity: 0.8;
+}
+
+/* Zero state (when no windows) */
+.mosaic-blueprint-theme .mosaic-zero-state {
+  background-color: var(--mosaic-background);
+  color: var(--mosaic-foreground);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 16px;
+}
+
+/* Expand button icon */
+.mosaic-window-toolbar button[title="Expand"]::before {
+  content: "⤢";
+  font-size: 16px;
+}
+
+/* Split button icon */
+.mosaic-window-toolbar button[title="Split"] ::before {
+  content: "⊞";
+  font-size: 16px;
+}
+
+/* Remove button icon */
+.mosaic-window-toolbar button[title="Close"] ::before {
+  content: "×";
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* Additional controls drawer */
+.mosaic-blueprint-theme .mosaic-window-additional-actions-bar {
+  background-color: var(--mosaic-toolbar-bg);
+  border-bottom: 1px solid var(--mosaic-border);
+  padding: 8px;
+}
+
