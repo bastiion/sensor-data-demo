@@ -7,7 +7,7 @@
   --mosaic-foreground: #333333;
   --mosaic-border: #d0d0d0;
   --mosaic-toolbar-bg: #ffffff;
-  --mosaic-toolbar-hover: #e8e8e8;
+  --mosaic-toolbar-hover: #f8f8f8;  /* More subtle hover - just slightly lighter */
   --mosaic-button-hover: #e0e0e0;
 }
 
@@ -18,7 +18,7 @@
   --mosaic-foreground: #e0e0e0;
   --mosaic-border: #404040;
   --mosaic-toolbar-bg: #2d2d2d;
-  --mosaic-toolbar-hover: #3a3a3a;
+  --mosaic-toolbar-hover: #333333;  /* More subtle hover - just slightly lighter */
   --mosaic-button-hover: #404040;
 }
 
@@ -29,7 +29,7 @@
     --mosaic-foreground: #e0e0e0;
     --mosaic-border: #404040;
     --mosaic-toolbar-bg: #2d2d2d;
-    --mosaic-toolbar-hover: #3a3a3a;
+    --mosaic-toolbar-hover: #333333;  /* More subtle hover - just slightly lighter */
     --mosaic-button-hover: #404040;
   }
 }
@@ -54,6 +54,14 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  transition: background-color 0.2s ease;
+}
+
+/* Override default bright hover with subtle transition */
+.mosaic.mosaic-blueprint-theme .mosaic-window .mosaic-window-toolbar.draggable:hover,
+.mosaic.mosaic-blueprint-theme .mosaic-preview .mosaic-window-toolbar.draggable:hover {
+  background: var(--mosaic-toolbar-hover) !important;
+  transition: background-color 0.2s ease;
 }
 
 .mosaic-blueprint-theme .mosaic-window-title {

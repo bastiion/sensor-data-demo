@@ -1,152 +1,169 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Box } from '@chakra-ui/react'
 import { Mosaic, MosaicWindow, MosaicNode } from 'react-mosaic-component'
+import { v4 as uuid } from 'uuid'
 import 'react-mosaic-component/react-mosaic-component.css'
 import '../mosaic-theme.css'
-import { useSearchView } from '@/hooks/useSearchView'
-import { useSearchStore } from '@/store/useSearchStore'
-import { ListType } from '@/list-type'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { createInstance, removeInstance } from '@/store/slices/viewInstanceSlice'
+import { clearInstanceFilters } from '@/store/slices/filterSlice'
+import { selectAllViewInstances } from '@/store/selectors/viewInstanceSelector'
+import { useViewRegistry } from '@/views/ViewRegistry'
+import { TileToolbar } from '@/components/TileToolbar'
 import { CustomLightbox } from '@/components/ui/custom-light-box'
-import { Navigation } from '@/components/Navigation'
 import { ChakraColorModeSync } from '@/components/ChakraColorModeSync'
-import { SearchWindow } from '@/components/windows/SearchWindow'
-import { GalleryWindow } from '@/components/windows/GalleryWindow'
-import { ListWindow } from '@/components/windows/ListWindow'
-import { MapWindow } from '@/components/windows/MapWindow'
-import { StatusWindow } from '@/components/windows/StatusWindow'
 
-// Define view IDs for the mosaic
-export type ViewId = 'search' | 'gallery' | 'list' | 'map' | 'status'
-
-const WINDOW_TITLES: Record<ViewId, string> = {
-  search: 'Search & Controls',
-  gallery: 'Gallery View',
-  list: 'List View',
-  map: 'Map View',
-  status: 'Status & Info',
-}
+type ViewId = string
 
 /**
  * MosaicView - Main page with tiling window layout using react-mosaic-component
  */
 const MosaicView = () => {
-  const { setGeoSearch } = useSearchStore()
-  const {
-    debouncedSearchQuery,
-    isSearching,
-    listItems,
-    isLoading,
-    isFetching,
-    hasMeiliResults,
-    hasSparqlEnrichment,
-  } = useSearchView()
+  const dispatch = useAppDispatch()
+  const viewInstances = useAppSelector(selectAllViewInstances)
+  const { getViewComponent, getViewDefinition } = useViewRegistry()
 
-  const [listTypes, setListTypes] = useState<ListType[]>([ListType.LIST])
-
-  // Handle list type selection
-  const handleListTypeChange = useCallback((listType: ListType) => {
-    setListTypes(prev => {
-      if (listType === ListType.MAP) {
-        setGeoSearch(!prev.includes(ListType.MAP))
-      }
-      return prev.includes(listType) ? prev.filter(t => t !== listType) : [...prev, listType]
-    })
-  }, [setGeoSearch])
-
-  // Initial mosaic layout - customizable by user through drag & drop
+  // Initial mosaic layout
   const [mosaicValue, setMosaicValue] = useState<MosaicNode<ViewId> | null>({
     direction: 'row',
-    first: {
-      direction: 'column',
-      first: 'search',
-      second: 'status',
-      splitPercentage: 40,
-    },
+    first: 'gallery',
     second: {
       direction: 'row',
-      first: {
-        direction: 'column',
-        first: 'gallery',
-        second: 'list',
-        splitPercentage: 50,
-      },
+      first: 'list',
       second: 'map',
-      splitPercentage: 60,
+      splitPercentage: 50,
     },
-    splitPercentage: 25,
+    splitPercentage: 40,
   })
+
+  // Track which tiles have been initialized
+  const [initializedTiles, setInitializedTiles] = useState<Set<string>>(new Set())
 
   // Render each window based on its ViewId
   const renderTile = useCallback(
-    (id: ViewId, path: any) => {
-      let content: JSX.Element
+    (tileId: ViewId, path: any) => {
+      // Get or create instance for this tile
+      let instance = viewInstances[tileId]
 
-      switch (id) {
-        case 'search':
-          content = (
-            <SearchWindow 
-              listTypes={listTypes} 
-              onListTypeChange={handleListTypeChange}
-            />
-          )
-          break
-        case 'gallery':
-          content = <GalleryWindow items={listItems} />
-          break
-        case 'list':
-          content = <ListWindow items={listItems} />
-          break
-        case 'map':
-          content = <MapWindow items={listItems} />
-          break
-        case 'status':
-          content = (
-            <StatusWindow
-              isSearching={isSearching}
-              searchQuery={debouncedSearchQuery}
-              resultCount={listItems.length}
-              isLoading={isLoading}
-              isFetching={isFetching}
-              hasMeiliResults={hasMeiliResults}
-              hasSparqlEnrichment={hasSparqlEnrichment}
-            />
-          )
-          break
-        default:
-          content = <Box padding={4}>Unknown view: {id}</Box>
+      // Initialize instance if it doesn't exist
+      if (!instance && !initializedTiles.has(tileId)) {
+        const instanceId = uuid()
+        const defaultViewType = tileId === 'gallery' ? 'gallery' : tileId === 'list' ? 'list' : 'map'
+        
+        dispatch(
+          createInstance({
+            instanceId,
+            tileId,
+            viewType: defaultViewType,
+            filterEnabled: false,
+          })
+        )
+
+        setInitializedTiles((prev) => new Set(prev).add(tileId))
+
+        // Return a placeholder while initializing
+        return (
+          <MosaicWindow path={path} title="Loading...">
+            <Box height="100%" width="100%" bg="bg" />
+          </MosaicWindow>
+        )
+      }
+
+      if (!instance) {
+        return (
+          <MosaicWindow path={path} title="Loading...">
+            <Box height="100%" width="100%" bg="bg" />
+          </MosaicWindow>
+        )
+      }
+
+      const ViewComponent = getViewComponent(instance.viewType)
+      const viewDef = getViewDefinition(instance.viewType)
+
+      if (!ViewComponent || !viewDef) {
+        return (
+          <MosaicWindow path={path} title="Unknown View">
+            <Box height="100%" width="100%" bg="bg" padding={4}>
+              View type "{instance.viewType}" not found
+            </Box>
+          </MosaicWindow>
+        )
       }
 
       return (
-        <MosaicWindow<ViewId>
+        <MosaicWindow
           path={path}
-          title={WINDOW_TITLES[id]}
-          createNode={() => 'search'}
+          title="" // Empty title since dropdown shows the view type
+          toolbarControls={
+            <TileToolbar
+              instanceId={instance.instanceId}
+              viewType={instance.viewType}
+              canFilter={viewDef.canFilter}
+              filterEnabled={instance.filterEnabled}
+            />
+          }
         >
-          {content}
+          <ViewComponent instanceId={instance.instanceId} filterEnabled={instance.filterEnabled} />
         </MosaicWindow>
       )
     },
     [
-      listTypes,
-      handleListTypeChange,
-      listItems,
-      isSearching,
-      debouncedSearchQuery,
-      isLoading,
-      isFetching,
-      hasMeiliResults,
-      hasSparqlEnrichment,
+      viewInstances,
+      initializedTiles,
+      getViewComponent,
+      getViewDefinition,
+      dispatch,
     ]
   )
+
+  // Handle mosaic changes to clean up removed tiles
+  const handleMosaicChange = useCallback(
+    (newValue: MosaicNode<ViewId> | null) => {
+      // Find removed tiles
+      const getAllTileIds = (node: MosaicNode<ViewId> | null): Set<string> => {
+        if (!node) return new Set()
+        if (typeof node === 'string') return new Set([node])
+        return new Set([
+          ...getAllTileIds(node.first),
+          ...getAllTileIds(node.second),
+        ])
+      }
+
+      const oldTiles = getAllTileIds(mosaicValue)
+      const newTiles = getAllTileIds(newValue)
+      const removedTiles = Array.from(oldTiles).filter((id) => !newTiles.has(id))
+
+      // Clean up removed tiles
+      removedTiles.forEach((tileId) => {
+        const instance = viewInstances[tileId]
+        if (instance) {
+          dispatch(removeInstance({ instanceId: instance.instanceId }))
+          dispatch(clearInstanceFilters({ instanceId: instance.instanceId }))
+        }
+        setInitializedTiles((prev) => {
+          const next = new Set(prev)
+          next.delete(tileId)
+          return next
+        })
+      })
+
+      setMosaicValue(newValue)
+    },
+    [mosaicValue, viewInstances, dispatch]
+  )
+
+  // Preload view components to ensure they register
+  useEffect(() => {
+    // Views will auto-register when first rendered
+  }, [])
 
   return (
     <Box height="100vh" width="100vw" overflow="hidden" bg="bg">
       <ChakraColorModeSync />
-      <Navigation />
       <Mosaic<ViewId>
         renderTile={renderTile}
         value={mosaicValue}
-        onChange={setMosaicValue}
+        onChange={handleMosaicChange}
         className="mosaic-blueprint-theme"
       />
       <CustomLightbox />
@@ -155,4 +172,3 @@ const MosaicView = () => {
 }
 
 export default MosaicView
-

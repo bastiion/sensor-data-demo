@@ -3,11 +3,13 @@ import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { Box, Button, Group } from '@chakra-ui/react'
 import { ImageListItem } from '@/image-list-item'
-import { useSearchStore } from '@/store/useSearchStore'
-import { useFilterStore } from '@/store/useFilter'
+import { useAppDispatch } from '@/store/hooks'
+import { setFilter } from '@/store/slices/filterSlice'
 
 interface MapLibreProps {
   tags: ImageListItem[]
+  instanceId: string
+  filterEnabled: boolean
 }
 
 type Feature = {
@@ -19,13 +21,25 @@ type Feature = {
   properties: ImageListItem
 }
 
-export const MapLibre = ({ tags }: MapLibreProps) => {
+export const MapLibre = ({ tags, instanceId, filterEnabled }: MapLibreProps) => {
+  const dispatch = useAppDispatch()
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<maplibregl.Map | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
+  
+  // Use refs to track current values in event handlers
+  const filterEnabledRef = useRef(filterEnabled)
+  const instanceIdRef = useRef(instanceId)
+  
+  // Update refs when props change
+  useEffect(() => {
+    filterEnabledRef.current = filterEnabled
+    instanceIdRef.current = instanceId
+  }, [filterEnabled, instanceId])
 
-  const { geoSearchCenter, setGeoSearchCenter } = useSearchStore()
-  const { setBoundsGeoFilter, clearBoundsGeoFilter } = useFilterStore()
+  // Default map center - could be moved to Redux if needed
+  const geoSearchCenter = { lat: 50.986834385099854, lng: 13.550555724194794 }
+  
   const features = useMemo<Feature[]>(() => {
     return tags.filter(tag => tag.geo).map(tag => ({
       type: "Feature",
@@ -61,11 +75,21 @@ export const MapLibre = ({ tags }: MapLibreProps) => {
         zoom: 7
       })
       map.current.on('moveend', () => {
+        // Always capture moveend, but only dispatch if filter is enabled
+        if (!filterEnabledRef.current) return
+        
         const bounds = map.current?.getBounds()
-        const center = bounds?.getCenter()
-        if (center && bounds) {
-          setGeoSearchCenter({ lat: center.lat, lng: center.lng })
-          setBoundsGeoFilter({ bounds: { minLat: bounds.getSouth(), maxLat: bounds.getNorth(), minLng: bounds.getWest(), maxLng: bounds.getEast() } })
+        if (bounds) {
+          dispatch(setFilter({ 
+            instanceId: instanceIdRef.current, 
+            filterType: 'bounds', 
+            value: { 
+              minLat: bounds.getSouth(), 
+              maxLat: bounds.getNorth(), 
+              minLng: bounds.getWest(), 
+              maxLng: bounds.getEast() 
+            } 
+          }))
         }
       })
       map.current.on('load', () => {
@@ -89,7 +113,6 @@ export const MapLibre = ({ tags }: MapLibreProps) => {
       if (map.current) {
         map.current.remove()
         map.current = null
-        clearBoundsGeoFilter()
       }
     }
   }, [])
@@ -229,12 +252,36 @@ export const MapLibre = ({ tags }: MapLibreProps) => {
   return (
     <Box position="relative" height="100%" width="100%" display="flex" flexDirection="column">
       <Group attached position="absolute" top={2} left={2} zIndex={1000}>
-        <Button onClick={() => {
-           removeLayers()
-           redrawLayers()
-        }} size="sm">Redraw Map</Button>
-        <Button onClick={() => map.current?.zoomTo(map.current.getZoom() + 1)} size="sm">Zoom In</Button>
-        <Button onClick={() => map.current?.zoomTo(map.current.getZoom() - 1)} size="sm">Zoom Out</Button>
+        <Button 
+          onClick={() => {
+            removeLayers()
+            redrawLayers()
+          }} 
+          size="sm"
+          bg="bg.panel"
+          color="fg"
+          _hover={{ bg: "bg.muted" }}
+        >
+          Redraw Map
+        </Button>
+        <Button 
+          onClick={() => map.current?.zoomTo(map.current.getZoom() + 1)} 
+          size="sm"
+          bg="bg.panel"
+          color="fg"
+          _hover={{ bg: "bg.muted" }}
+        >
+          Zoom In
+        </Button>
+        <Button 
+          onClick={() => map.current?.zoomTo(map.current.getZoom() - 1)} 
+          size="sm"
+          bg="bg.panel"
+          color="fg"
+          _hover={{ bg: "bg.muted" }}
+        >
+          Zoom Out
+        </Button>
       </Group>
       <Box ref={mapContainer} width="100%" height="100%" flex="1" />
     </Box>

@@ -7,6 +7,7 @@ export type Geo = {
 
 export type ImageListItem = {
   id: string
+  fileInstanceUri: string
   image?: string
   title: string
   description?: string

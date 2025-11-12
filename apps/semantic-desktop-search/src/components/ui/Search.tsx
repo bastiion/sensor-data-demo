@@ -1,7 +1,8 @@
 import { HStack, Input, Kbd } from "@chakra-ui/react"
 import { InputGroup } from "@/components/ui/input-group"
 import { LuSearch } from "react-icons/lu"
-import { useSearchStore } from "@/store/useSearchStore"
+import { useAppSelector, useAppDispatch } from "@/store/hooks"
+import { setSearchQuery, setPageSize } from "@/store/slices/searchSlice"
 import { useCallback, useEffect, useState } from "react"
 import debounce from "lodash/debounce"
 
@@ -12,7 +13,8 @@ interface SearchProps {
 export const Search = ({
   placeholder = "Search..."
 }: SearchProps) => {
-  const { searchQuery, setSearchQuery, pageSize, setPageSize } = useSearchStore()
+  const dispatch = useAppDispatch()
+  const { searchQuery, pageSize } = useAppSelector((state) => state.search)
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery)
 
   useEffect(() => {
@@ -20,8 +22,8 @@ export const Search = ({
   }, [searchQuery])
 
   const onSearchChange = useCallback(debounce((value: string) => {
-    setSearchQuery(value)
-  }, 300), [setSearchQuery])
+    dispatch(setSearchQuery(value))
+  }, 300), [dispatch])
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalSearchQuery(e.target.value)
@@ -50,7 +52,7 @@ export const Search = ({
         size="2xl"
         type="number"
         value={pageSize}
-        onChange={(e) => setPageSize(Number(e.target.value))}
+        onChange={(e) => dispatch(setPageSize(Number(e.target.value)))}
         placeholder="Size"
         fontSize="xl"
         opacity="0.5"

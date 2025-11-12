@@ -1,23 +1,23 @@
-import { useLightboxStore } from '@/store/useLightBoxStore'
+import { useAppDispatch } from '@/store/hooks'
+import { openLightbox } from '@/store/slices/lightboxSlice'
 import { Box, Image, Text, ListItem } from '@chakra-ui/react'
 
 interface ListItemProps {
   id: string
-  index: number
+  fileInstanceUri: string
   image?: string
   title: string
   description?: string
 }
 
-export const CustomListItem = ({ id, index, image, title, description }: ListItemProps) => {
-  const { open, setIndex } = useLightboxStore()
+export const CustomListItem = ({ id, fileInstanceUri, image, title, description }: ListItemProps) => {
+  const dispatch = useAppDispatch()
   const handleClick = () => {
-    setIndex(index)
-    open()
+    dispatch(openLightbox({ fileInstanceUri }))
   }
   return (
     <ListItem display="flex" alignItems="center"  margin="4px">
-      {image ? <Image src={`${image}?q=50&w=100`} alt="item image" boxSize="100px" className='clickable' onClick={handleClick} /> : <Box>{index}</Box> }
+      {image && <Image src={`${image}?q=50&w=100`} alt="item image" boxSize="100px" className='clickable' onClick={handleClick} />}
       <Box ml="4">
         <Text fontSize="lg" fontWeight="bold">
           {title}

@@ -5,7 +5,8 @@ import "react-photo-album/rows.css";
 
 
 import { Masonry, RenderComponentProps } from "masonic";
-import { useLightboxStore } from "@/store/useLightBoxStore";
+import { useAppDispatch } from "@/store/hooks";
+import { openLightbox } from "@/store/slices/lightboxSlice";
 
 
 interface GalleryViewProps {
@@ -24,17 +25,16 @@ type SImpleImage = {
   src: string
   width: number
   height: number
-  index: number
+  fileInstanceUri: string
 }
 
 
 
 const PhotoCard = ({ data }: RenderComponentProps<SImpleImage>) => {
-  const { setIndex, open } = useLightboxStore()
+  const dispatch = useAppDispatch()
 
   const handleClick = () => {
-    setIndex(data.index)
-    open()
+    dispatch(openLightbox({ fileInstanceUri: data.fileInstanceUri }))
   }
   return <img src={data.src} alt={data.src} width={data.width} height={data.height} onClick={handleClick} className="masonry-item clickable" />
 }
@@ -42,18 +42,28 @@ const PhotoCard = ({ data }: RenderComponentProps<SImpleImage>) => {
 export const GalleryView = ({ images }: GalleryViewProps) => {
 
   const thumbnails = useMemo<ImageListItem[]>(() => {
-    return images.filter(image => image.image).map(image => ({ ...image, image: `${image.image}?q=50&height=300px` }))
+    return images
+      .filter(image => image?.image && image?.id && image?.fileInstanceUri)
+      .map(image => ({ ...image, image: `${image.image}?q=50&height=300px` }))
   }, [images])
 
 
   const [photos, setPhotos] = useState<SImpleImage[]>([])
 
   useEffect(() => {
+    // If no thumbnails, set empty array and return
+    if (!thumbnails || thumbnails.length === 0) {
+      setPhotos([])
+      return
+    }
+
     const loadPhotos = async (image_list: ImageListItem[]) => {
       const sizes = __image_sizes__
       console.log(sizes)
       console.log("will load photos")
       for (const image of image_list) {
+        if (!image?.id || !image?.image || !image?.fileInstanceUri) continue
+        
         let size: ImageSize | undefined = sizes[image.id]
         if (!size) {
           try {
@@ -66,14 +76,49 @@ export const GalleryView = ({ images }: GalleryViewProps) => {
         }
       }
       //update photos a second time to ensure sizes are updated
-      setPhotos(thumbnails.map((image, index) => ({ src: image.image as string, width: sizes[image.id]?.width || 300, height: sizes[image.id]?.height || 300, index })))
+      const newPhotos = thumbnails
+        .filter(image => image?.id && image?.image && image?.fileInstanceUri)
+        .map((image) => {
+          // Create a stable object with all required properties
+          const photo: SImpleImage = {
+            src: image.image as string, 
+            width: sizes[image.id]?.width || 300, 
+            height: sizes[image.id]?.height || 300, 
+            fileInstanceUri: image.fileInstanceUri,
+          }
+          return photo
+        })
+        .filter(photo => photo.src && photo.fileInstanceUri) // Extra safety
+      
+      setPhotos(newPhotos)
     }
+    
     const sizes = __image_sizes__
+    const initialPhotos = thumbnails
+      .filter(image => image?.id && image?.image && image?.fileInstanceUri)
+      .map((image) => {
+        // Create a stable object with all required properties
+        const photo: SImpleImage = {
+          src: image.image as string, 
+          width: sizes[image.id]?.width || 300, 
+          height: sizes[image.id]?.height || 300, 
+          fileInstanceUri: image.fileInstanceUri,
+        }
+        return photo
+      })
+      .filter(photo => photo.src && photo.fileInstanceUri) // Extra safety
+    
+    setPhotos(initialPhotos)
     loadPhotos(thumbnails)
-    setPhotos(thumbnails.map((image, index) => ({ src: image.image as string, width: sizes[image.id]?.width || 300, height: sizes[image.id]?.height || 300, index })))
-  }, [thumbnails, setPhotos])
+  }, [thumbnails])
 
-  if (!photos.length) {
+  // Ensure photos is always a valid array
+  const validPhotos = useMemo(() => {
+    if (!photos || !Array.isArray(photos)) return []
+    return photos.filter(p => p && typeof p === 'object' && p.src && p.fileInstanceUri)
+  }, [photos])
+
+  if (validPhotos.length === 0) {
     return <div>No images found</div>
   }
 
@@ -82,7 +127,9 @@ export const GalleryView = ({ images }: GalleryViewProps) => {
       columnGutter={8}
       columnWidth={172}
       overscanBy={5}
-      items={photos} render={PhotoCard} />
+      items={validPhotos}
+      render={PhotoCard}
+    />
   </div>
 }
 
