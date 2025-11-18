@@ -8,6 +8,7 @@ import { store } from '@/store'
 import { ViewRegistry } from '@/views/ViewRegistry'
 import { SearchFAB } from '@/components/SearchFAB'
 import MosaicView from './pages/MosaicView.tsx'
+import SensorTimeSeriesPage from './pages/SensorTimeSeriesPage.tsx'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(
@@ -19,6 +20,7 @@ createRoot(document.getElementById('root')!).render(
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<MosaicView />} />
+                <Route path="/geo" element={<SensorTimeSeriesPage />} />
               </Routes>
               <SearchFAB />
             </BrowserRouter>
