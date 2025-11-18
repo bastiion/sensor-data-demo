@@ -14,8 +14,6 @@
     "@emotion/react": "^11.13.3",
     "@meilisearch/instant-meilisearch": "^0.29.0",
     "@reduxjs/toolkit": "^2.10.1",
-    "@tanstack/react-query": "4",
-    "@tanstack/react-query-devtools": "^5.59.19",
     "ajv": "^8.17.1",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
@@ -34,12 +32,12 @@
     "react-router-dom": "^7.9.5",
     "react-virtuoso": "^4.12.0",
     "uuid": "^13.0.0",
+    "vis-timeline": "^8.4.0",
     "yet-another-react-lightbox": "^3.21.6",
     "zustand": "^5.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
-    "@tanstack/eslint-plugin-query": "4",
     "@types/lodash": "^4.17.13",
     "@types/lodash-es": "^4.17.12",
     "@types/react": "^18.3.12",

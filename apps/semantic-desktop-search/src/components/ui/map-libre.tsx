@@ -5,6 +5,8 @@ import { Box, Button, Group } from '@chakra-ui/react'
 import { ImageListItem } from '@/image-list-item'
 import { useAppDispatch } from '@/store/hooks'
 import { setFilter } from '@/store/slices/filterSlice'
+import { openLightbox } from '@/store/slices/lightboxSlice'
+import { debounce } from 'lodash-es'
 
 interface MapLibreProps {
   tags: ImageListItem[]
@@ -26,6 +28,7 @@ export const MapLibre = ({ tags, instanceId, filterEnabled }: MapLibreProps) => 
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<maplibregl.Map | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [autoRedraw, setAutoRedraw] = useState(true)
   
   // Use refs to track current values in event handlers
   const filterEnabledRef = useRef(filterEnabled)
@@ -44,7 +47,14 @@ export const MapLibre = ({ tags, instanceId, filterEnabled }: MapLibreProps) => 
     return tags.filter(tag => tag.geo).map(tag => ({
       type: "Feature",
       geometry: { type: "Point", coordinates: [tag.geo?.lng || 0, tag.geo?.lat || 0] },
-      properties: tag
+      properties: {
+        ...tag,
+        // Ensure all properties are strings for MapLibre (it doesn't handle complex objects well)
+        fileInstanceUri: tag.fileInstanceUri,
+        title: tag.title,
+        description: tag.description || '',
+        image: tag.image || ''
+      }
     }))
   }, [tags])
 
@@ -97,6 +107,24 @@ export const MapLibre = ({ tags, instanceId, filterEnabled }: MapLibreProps) => 
       })
     }
 
+    // Add event delegation for popup image clicks
+    const handlePopupImageClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (target.classList.contains('map-popup-image')) {
+        const fileInstanceUri = target.getAttribute('data-file-instance-uri')
+        if (fileInstanceUri) {
+          dispatch(openLightbox({ fileInstanceUri }))
+          // Close all popups
+          const popups = document.getElementsByClassName('maplibregl-popup')
+          Array.from(popups).forEach(popup => popup.remove())
+        }
+      }
+    }
+
+    if (mapContainer.current) {
+      mapContainer.current.addEventListener('click', handlePopupImageClick)
+    }
+
     // Add resize observer to handle window size changes
     const resizeObserver = new ResizeObserver(() => {
       if (map.current) {
@@ -108,14 +136,19 @@ export const MapLibre = ({ tags, instanceId, filterEnabled }: MapLibreProps) => 
       resizeObserver.observe(mapContainer.current)
     }
 
+    const currentContainer = mapContainer.current
+
     return () => {
+      if (currentContainer) {
+        currentContainer.removeEventListener('click', handlePopupImageClick)
+      }
       resizeObserver.disconnect()
       if (map.current) {
         map.current.remove()
         map.current = null
       }
     }
-  }, [])
+  }, [dispatch])
 
   const redrawLayers = useCallback(() => {
 
@@ -214,7 +247,7 @@ export const MapLibre = ({ tags, instanceId, filterEnabled }: MapLibreProps) => 
         .setLngLat(coordinates)
         .setHTML(
           `<div style="background: #222; color: white; padding: 12px; border-radius: 4px; max-width: 300px;">
-            ${properties.image ? `<img src="${properties.image}?w=300" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;">` : ''}
+            ${properties.image ? `<img src="${properties.image}?w=300" class="map-popup-image" data-file-instance-uri="${properties.fileInstanceUri}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; cursor: pointer;">` : ''}
             <strong>${properties.title}</strong>
             ${properties.description ? `<br>${properties.description}` : ''}
           </div>`
@@ -231,8 +264,15 @@ export const MapLibre = ({ tags, instanceId, filterEnabled }: MapLibreProps) => 
       map.current!.getCanvas().style.cursor = '';
     });
     
+    map.current.on('mouseenter', 'unclustered-point', () => {
+      map.current!.getCanvas().style.cursor = 'pointer';
+    });
+    map.current.on('mouseleave', 'unclustered-point', () => {
+      map.current!.getCanvas().style.cursor = '';
+    });
+    
       
-  }, [features, isLoaded])
+  }, [features, isLoaded, dispatch])
 
   const removeLayers = useCallback(() => {
     if (map.current) {
@@ -243,27 +283,65 @@ export const MapLibre = ({ tags, instanceId, filterEnabled }: MapLibreProps) => 
     }
   }, [])
 
+  // Manual redraw function
+  const handleManualRedraw = useCallback(() => {
+    removeLayers()
+    redrawLayers()
+  }, [removeLayers, redrawLayers])
+
+  // Debounced auto-redraw function
+  const debouncedAutoRedraw = useMemo(
+    () => debounce(() => {
+      if (map.current && isLoaded && autoRedraw) {
+        removeLayers()
+        redrawLayers()
+      }
+    }, 500), // 500ms debounce delay
+    [removeLayers, redrawLayers, isLoaded, autoRedraw]
+  )
+
+  // Auto-redraw when features change (if enabled)
+  useEffect(() => {
+    if (autoRedraw && isLoaded) {
+      debouncedAutoRedraw()
+    }
+    
+    // Cleanup debounce on unmount
+    return () => {
+      debouncedAutoRedraw.cancel()
+    }
+  }, [features, autoRedraw, isLoaded, debouncedAutoRedraw])
+
   useEffect(() => {
     return () => {
       removeLayers()
       }
-    }, [])
+    }, [removeLayers])
 
   return (
     <Box position="relative" height="100%" width="100%" display="flex" flexDirection="column">
       <Group attached position="absolute" top={2} left={2} zIndex={1000}>
         <Button 
-          onClick={() => {
-            removeLayers()
-            redrawLayers()
-          }} 
+          onClick={() => setAutoRedraw(!autoRedraw)} 
           size="sm"
-          bg="bg.panel"
-          color="fg"
-          _hover={{ bg: "bg.muted" }}
+          bg={autoRedraw ? "blue.500" : "bg.panel"}
+          color={autoRedraw ? "white" : "fg"}
+          _hover={autoRedraw ? { bg: "blue.600" } : { bg: "bg.muted" }}
+          title={autoRedraw ? "Auto-redraw enabled" : "Auto-redraw disabled"}
         >
-          Redraw Map
+          Auto {autoRedraw ? "✓" : "✗"}
         </Button>
+        {!autoRedraw && (
+          <Button 
+            onClick={handleManualRedraw} 
+            size="sm"
+            bg="bg.panel"
+            color="fg"
+            _hover={{ bg: "bg.muted" }}
+          >
+            Redraw
+          </Button>
+        )}
         <Button 
           onClick={() => map.current?.zoomTo(map.current.getZoom() + 1)} 
           size="sm"
