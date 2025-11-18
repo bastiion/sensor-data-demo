@@ -143,7 +143,7 @@ export const useSensorStore = create<SensorState>((set, get) => ({
     
     try {
       // Import the data from public directory
-      const response = await fetch('/tryout_data.json')
+      const response = await fetch(`${import.meta.env.BASE_URL}tryout_data.json`)
       const rawData = await response.json()
       
       // Validate with Zod schema
