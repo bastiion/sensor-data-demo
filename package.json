@@ -6,14 +6,15 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "bun run --cwd apps/sensor-map dev",
-    "build": "bun run --cwd apps/sensor-map build",
-    "lint": "bun run --cwd apps/sensor-map lint"
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "preview": "turbo run preview"
   },
-  "dependencies": {
-
-  },
+  "dependencies": {},
   "devDependencies": {
+    "turbo": "^2.6.1",
     "vite-tsconfig-paths": "^5.1.0"
-  }
+  },
+  "packageManager": "bun@1.2.2"
 }
