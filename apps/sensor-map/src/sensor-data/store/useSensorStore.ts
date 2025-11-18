@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { type SensorFeatureCollection, SensorFeatureCollectionSchema } from '@/lib/sensorDataSchema'
+import { type SensorFeatureCollection, SensorFeatureCollectionSchema } from 'shared-schemas'
 
 export interface DataBounds {
   minTime: Date
