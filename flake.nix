@@ -1,8 +1,8 @@
 {
-  description = "Flake for dev shell each default system";
+  description = "Flake for dev shell of the sensor-map app";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     flake-utils.url = "github:numtide/flake-utils";
   };
   outputs = { self, nixpkgs, flake-utils }:
@@ -12,8 +12,6 @@
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
             nodejs_latest
-            nodePackages_latest.yarn
-            nodePackages_latest.pnpm
             bun
           ];
           LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib";
