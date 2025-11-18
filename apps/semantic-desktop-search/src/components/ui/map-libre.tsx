@@ -62,25 +62,7 @@ export const MapLibre = ({ tags, instanceId, filterEnabled }: MapLibreProps) => 
     if (mapContainer.current && !map.current) {
       map.current = new maplibregl.Map({
         container: mapContainer.current,
-        style: {
-          "version": 8,
-          "sources": {
-            "osm": {
-              "type": "raster",
-              "tiles": ["https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"],
-              "tileSize": 256,
-              "attribution": "&copy; OpenStreetMap Contributors",
-              "maxzoom": 19
-            }
-          },
-          "layers": [
-            {
-              "id": "osm",
-              "type": "raster",
-              "source": "osm"
-            }
-          ]
-        },
+        style: 'https://tile-1.kartenforum.slub-dresden.de/styles/maptiler-basic-v2/style.json',
         center: [geoSearchCenter.lng, geoSearchCenter.lat],
         zoom: 7
       })
