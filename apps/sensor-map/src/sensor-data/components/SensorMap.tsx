@@ -137,9 +137,9 @@ export const SensorMap = () => {
         <div style="padding: 10px; min-width: 200px;">
           <h3 style="margin: 0 0 8px 0; font-weight: bold; font-size: 14px;">${name || 'Sensor'}</h3>
           <div style="font-size: 12px;">
-            <p style="margin: 4px 0;"><strong>Value:</strong> ${value !== null ? `${value} ${uom}` : 'N/A'}</p>
-            ${hi !== null ? `<p style="margin: 4px 0;"><strong>High:</strong> ${hi} ${uom}</p>` : ''}
-            ${lo !== null ? `<p style="margin: 4px 0;"><strong>Low:</strong> ${lo} ${uom}</p>` : ''}
+            <p style="margin: 4px 0;"><strong>Value:</strong> ${value != null ? `${value} ${uom}` : 'N/A'}</p>
+            ${hi != null ? `<p style="margin: 4px 0;"><strong>High:</strong> ${hi} ${uom}</p>` : ''}
+            ${lo != null ? `<p style="margin: 4px 0;"><strong>Low:</strong> ${lo} ${uom}</p>` : ''}
             <p style="margin: 4px 0;"><strong>Time:</strong> ${new Date(time).toLocaleString()}</p>
             <p style="margin: 4px 0; color: #666;"><strong>Network:</strong> ${network}</p>
             <p style="margin: 4px 0; color: #666; font-size: 11px;">${description}</p>
