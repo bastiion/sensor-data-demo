@@ -3,6 +3,7 @@ import { ViewDefinition, ViewComponent, ViewRegistration } from './types'
 import { ListView, listViewDefinition } from './ListView'
 import { GalleryView, galleryViewDefinition } from './GalleryView'
 import { MapView, mapViewDefinition } from './MapView'
+import { TimelineView, timelineViewDefinition } from './TimelineView'
 
 interface ViewRegistryContextValue {
   views: Map<string, ViewRegistration>
@@ -23,6 +24,7 @@ const initialViews = new Map<string, ViewRegistration>([
   ['list', { definition: listViewDefinition, component: ListView }],
   ['gallery', { definition: galleryViewDefinition, component: GalleryView }],
   ['map', { definition: mapViewDefinition, component: MapView }],
+  ['timeline', { definition: timelineViewDefinition, component: TimelineView }],
 ])
 
 export const ViewRegistry = ({ children }: ViewRegistryProps) => {

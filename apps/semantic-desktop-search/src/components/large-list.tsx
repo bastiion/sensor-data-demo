@@ -10,9 +10,9 @@ interface LargeListProps {
 
 export const LargeList = ({ items }: LargeListProps) => {
   // Items are already filtered by Redux selectors
-  return <List.Root>
+  return <List.Root style={{ height: '100%' }}>
     <Virtuoso
-      style={{ height: '800px' }}
+      style={{ height: '100%' }}
       data={items}
       itemContent={(_index, item) => <CustomListItem key={item.id} {...item} />}
     />

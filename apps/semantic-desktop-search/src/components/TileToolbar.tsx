@@ -56,14 +56,25 @@ export const TileToolbar = ({
         onValueChange={(e: any) => handleViewChange(e.value[0])}
         size="xs"
         width="140px"
-        positioning={{ sameWidth: false }}
+        positioning={{ 
+          sameWidth: false,
+          placement: 'bottom-start',
+          strategy: 'fixed'
+        }}
       >
         <SelectTrigger>
           <SelectValueText placeholder="View type" />
         </SelectTrigger>
-        <SelectContent minW="200px">
+        <SelectContent 
+          minW="200px"
+          zIndex={10000}
+          maxH="400px"
+          minH="120px"
+          overflow="auto"
+          py={2}
+        >
           {viewCollection.items.map((view) => (
-            <SelectItem key={view.value} item={view}>
+            <SelectItem key={view.value} item={view} py={2} minH="36px">
               {view.label}
             </SelectItem>
           ))}

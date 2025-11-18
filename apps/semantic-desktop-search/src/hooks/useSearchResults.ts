@@ -70,7 +70,7 @@ export const useSearchResults = () => {
     isLoading: isMeiliSearching || (meilisearchResults && meilisearchResults.length > 0 && isSparqlLoading),
     isFetching: isMeiliFetching || isSparqlFetching,
     hasMeiliResults: Boolean(meilisearchResults && meilisearchResults.length > 0),
-    hasSparqlEnrichment: Boolean(sparqlEnrichment && sparqlEnrichment.size > 0),
+    hasSparqlEnrichment: Boolean(sparqlEnrichment && Object.keys(sparqlEnrichment).length > 0),
   }
 }
 

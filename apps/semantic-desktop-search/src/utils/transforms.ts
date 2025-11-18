@@ -1,7 +1,8 @@
 import { SlideImage } from 'yet-another-react-lightbox'
-import { ImageListItem, Geo } from '@/image-list-item'
+import { ImageListItem, Geo, TimeConfig, DEFAULT_TIME_CONFIG } from '@/image-list-item'
 import { MeiliSearchResult } from './meilisearch'
 import { SPARQLMetadata } from './sparql'
+import { get } from 'lodash-es'
 
 const thumbnailServerUrl = "http://localhost:20045/"
 
@@ -46,9 +47,32 @@ const parseWKT = (location: string | undefined): Geo | undefined => {
 }
 
 /**
- * Transform enriched result to ImageListItem
+ * Extract date from result using time config with fallback paths
  */
-export const enrichedResultToListItem = (result: EnrichedResult): ImageListItem => {
+const extractDate = (result: EnrichedResult, paths: string[]): Date | undefined => {
+  for (const path of paths) {
+    const value = get(result, path)
+    if (value) {
+      try {
+        const date = new Date(value)
+        if (!isNaN(date.getTime())) {
+          return date
+        }
+      } catch (e) {
+        // Continue to next path
+      }
+    }
+  }
+  return undefined
+}
+
+/**
+ * Transform enriched result to ImageListItem with optional time config
+ */
+export const enrichedResultToListItem = (
+  result: EnrichedResult, 
+  timeConfig: TimeConfig = DEFAULT_TIME_CONFIG
+): ImageListItem => {
   return {
     id: result.id || result.filePath,
     fileInstanceUri: result.fileInstanceUri,
@@ -56,6 +80,7 @@ export const enrichedResultToListItem = (result: EnrichedResult): ImageListItem 
     title: result.title || result.filePath.split("/").pop() || result.filePath,
     description: result.filePath,
     geo: result.sparqlMetadata?.location ? parseWKT(result.sparqlMetadata.location) : undefined,
+    date: extractDate(result, timeConfig.timeStart),
   }
 }
 
@@ -72,8 +97,11 @@ export const enrichedResultToSlideImage = (result: EnrichedResult): SlideImage |
 /**
  * Transform multiple enriched results to ImageListItems
  */
-export const enrichedResultsToListItems = (results: EnrichedResult[]): ImageListItem[] => {
-  return results.map(enrichedResultToListItem)
+export const enrichedResultsToListItems = (
+  results: EnrichedResult[], 
+  timeConfig: TimeConfig = DEFAULT_TIME_CONFIG
+): ImageListItem[] => {
+  return results.map(result => enrichedResultToListItem(result, timeConfig))
 }
 
 /**

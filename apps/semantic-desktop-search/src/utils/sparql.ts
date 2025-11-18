@@ -9,14 +9,17 @@ export interface SPARQLEnrichmentParams {
   knowledgebase: string
 }
 
+// Use a plain object instead of Map for Redux serialization
+export type SPARQLEnrichmentMap = Record<string, SPARQLMetadata>
+
 /**
  * Enrich file results with SPARQL metadata
  */
 export const enrichWithSparql = async ({
   fileInstanceUris,
   knowledgebase,
-}: SPARQLEnrichmentParams): Promise<Map<string, SPARQLMetadata>> => {
-  if (!fileInstanceUris.length) return new Map()
+}: SPARQLEnrichmentParams): Promise<SPARQLEnrichmentMap> => {
+  if (!fileInstanceUris.length) return {}
 
   const fileInstanceFilters = fileInstanceUris
     .map((uri) => `<${uri}>`)
@@ -53,15 +56,15 @@ export const enrichWithSparql = async ({
 
   const data = await response.json()
   
-  const metadataMap = new Map<string, SPARQLMetadata>()
+  const metadataMap: SPARQLEnrichmentMap = {}
   data.results?.bindings?.forEach((binding: any) => {
     const fileInstance = binding.fileInstance?.value
     if (fileInstance) {
-      metadataMap.set(fileInstance, {
+      metadataMap[fileInstance] = {
         location: binding.location?.value,
         photoDate: binding.photoDate?.value,
         dateModified: binding.dateModified?.value,
-      })
+      }
     }
   })
 

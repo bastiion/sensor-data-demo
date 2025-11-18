@@ -8,8 +8,8 @@ export interface SearchState {
 
 const initialState: SearchState = {
   searchQuery: '',
-  pageSize: 50,
-  knowledgebase: 'http://localhost:9999/bigdata/namespace/kb/sparql',
+  pageSize: 500,
+  knowledgebase: 'http://localhost:7001/query',
 }
 
 const searchSlice = createSlice({

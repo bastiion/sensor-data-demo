@@ -3,7 +3,7 @@ import { RootState } from '../index'
 import { EnrichedResult, enrichedResultsToListItems, enrichedResultsToSlideImages } from '@/utils/transforms'
 import { applyFilters } from '@/utils/filters'
 import { MeiliSearchResult } from '@/utils/meilisearch'
-import { SPARQLMetadata } from '@/utils/sparql'
+import { SPARQLEnrichmentMap } from '@/utils/sparql'
 
 /**
  * Combine Meilisearch results with SPARQL enrichment
@@ -11,14 +11,14 @@ import { SPARQLMetadata } from '@/utils/sparql'
 export const selectEnrichedResults = createSelector(
   [
     (_state: RootState, meilisearchResults: MeiliSearchResult[] | undefined) => meilisearchResults,
-    (_state: RootState, _meilisearchResults: MeiliSearchResult[] | undefined, sparqlEnrichment: Map<string, SPARQLMetadata> | undefined) => sparqlEnrichment,
+    (_state: RootState, _meilisearchResults: MeiliSearchResult[] | undefined, sparqlEnrichment: SPARQLEnrichmentMap | undefined) => sparqlEnrichment,
   ],
   (meilisearchResults, sparqlEnrichment): EnrichedResult[] => {
     if (!meilisearchResults) return []
     
     return meilisearchResults.map((meiliResult) => ({
       ...meiliResult,
-      sparqlMetadata: sparqlEnrichment?.get(meiliResult.fileInstanceUri),
+      sparqlMetadata: sparqlEnrichment?.[meiliResult.fileInstanceUri],
     }))
   }
 )

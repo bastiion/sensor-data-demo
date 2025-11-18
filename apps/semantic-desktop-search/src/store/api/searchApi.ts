@@ -1,6 +1,6 @@
 import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react'
 import { searchFiles, MeiliSearchResult } from '@/utils/meilisearch'
-import { enrichWithSparql, SPARQLMetadata } from '@/utils/sparql'
+import { enrichWithSparql, SPARQLEnrichmentMap } from '@/utils/sparql'
 
 export interface SearchFilesArgs {
   query: string
@@ -26,7 +26,7 @@ export const searchApi = createApi({
         }
       },
     }),
-    enrichWithSparql: builder.query<Map<string, SPARQLMetadata>, EnrichWithSparqlArgs>({
+    enrichWithSparql: builder.query<SPARQLEnrichmentMap, EnrichWithSparqlArgs>({
       queryFn: async ({ fileInstanceUris, knowledgebase }) => {
         try {
           const enrichment = await enrichWithSparql({ fileInstanceUris, knowledgebase })
