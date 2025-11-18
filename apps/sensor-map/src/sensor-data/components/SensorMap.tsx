@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import maplibregl from 'maplibre-gl'
-import 'maplibre-gl/dist/maplibre-gl.css'
 import { Box } from '@chakra-ui/react'
-import { useFilterStore } from '../store/useFilterStore'
-import { useSensorData } from '../hooks/useSensorData'
+import { useFilterStore } from '@/sensor-data/store/useFilterStore'
+import { useSensorData } from '@/sensor-data/hooks/useSensorData'
 import type { SensorFeature } from 'shared-schemas'
 
 export const SensorMap = () => {
