@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { Box } from '@chakra-ui/react'
@@ -13,8 +13,8 @@ export const SensorMap = () => {
   // Default map center - Dresden
   const defaultCenter = { lat: 51.05, lng: 13.74 }
 
-  // Convert sensor stations to GeoJSON
-  const geojson = {
+  // Convert sensor stations to GeoJSON (memoized to prevent unnecessary recalculations)
+  const geojson = useMemo(() => ({
     type: 'FeatureCollection' as const,
     features: sensorStations
       .filter(station => station.currentReading !== null)
@@ -33,7 +33,7 @@ export const SensorMap = () => {
           time: station.currentReading!.time.toISOString(),
         },
       })),
-  }
+  }), [sensorStations])
 
   // Initialize map
   useEffect(() => {
@@ -66,27 +66,19 @@ export const SensorMap = () => {
     }
   }, [])
 
-  // Update map data when sensor stations change
+  // Initialize layers and event handlers (runs once when map is loaded)
   useEffect(() => {
     if (!map.current || !isLoaded) return
 
     const mapInstance = map.current
 
-    // Remove existing source and layers if they exist
-    if (mapInstance.getLayer('sensors-text')) {
-      mapInstance.removeLayer('sensors-text')
-    }
-    if (mapInstance.getLayer('sensors-circle')) {
-      mapInstance.removeLayer('sensors-circle')
-    }
-    if (mapInstance.getSource('sensors')) {
-      mapInstance.removeSource('sensors')
-    }
+    // Only set up layers and handlers if they don't exist yet
+    if (mapInstance.getSource('sensors')) return
 
-    // Add new source
+    // Add source with initial empty data (will be updated by the data update effect)
     mapInstance.addSource('sensors', {
       type: 'geojson',
-      data: geojson,
+      data: { type: 'FeatureCollection', features: [] },
     })
 
     // Add circle layer with color based on temperature
@@ -168,7 +160,20 @@ export const SensorMap = () => {
     mapInstance.on('mouseleave', 'sensors-circle', () => {
       mapInstance.getCanvas().style.cursor = ''
     })
-  }, [sensorStations, isLoaded])
+  }, [isLoaded])
+
+  // Update map data when sensor stations change (optimized: uses setData instead of remove/add)
+  useEffect(() => {
+    if (!map.current || !isLoaded) return
+
+    const mapInstance = map.current
+    const source = mapInstance.getSource('sensors') as maplibregl.GeoJSONSource | undefined
+
+    if (source) {
+      // Update existing source data - much more efficient than removing/re-adding layers!
+      source.setData(geojson)
+    }
+  }, [geojson, isLoaded])
 
   return (
     <Box height="100%" width="100%" overflow="hidden" bg="bg">
