@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react'
 import { format, differenceInMinutes, addMinutes } from 'date-fns'
-import { useSensorStore } from '../store/useSensorStore'
+import { useFilterStore } from '../store/useFilterStore'
 import { Box, Text } from '@chakra-ui/react'
 
 interface DateTimeRangeSliderProps {
   onTimeChange: (time: Date) => void
+  dataBounds: {
+    minTime: Date
+    maxTime: Date
+  } | null
 }
 
 // Convert a date to minutes since the start of the date range
@@ -17,8 +21,8 @@ const minutesToDate = (minutes: number, startDate: Date): Date => {
   return addMinutes(startDate, minutes)
 }
 
-export const DateTimeRangeSlider = ({ onTimeChange }: DateTimeRangeSliderProps) => {
-  const { dataBounds, selectedTime } = useSensorStore()
+export const DateTimeRangeSlider = ({ onTimeChange, dataBounds }: DateTimeRangeSliderProps) => {
+  const { selectedTime } = useFilterStore()
 
   if (!dataBounds) {
     return null

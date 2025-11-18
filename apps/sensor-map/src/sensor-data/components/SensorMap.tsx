@@ -2,10 +2,20 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { Box } from '@chakra-ui/react'
-import { useSensorStore } from '../store/useSensorStore'
+import { useFilterStore } from '../store/useFilterStore'
+import { useSensorData } from '../hooks/useSensorData'
+import type { SensorFeature } from 'shared-schemas'
 
 export const SensorMap = () => {
-  const { sensorStations } = useSensorStore()
+  const { selectedTime, selectedNetwork, timeRangeFrom, timeRangeTo } = useFilterStore()
+  
+  // Fetch sensor data with current filters
+  const { data: sensorData } = useSensorData({
+    network: selectedNetwork,
+    timeFrom: timeRangeFrom,
+    timeTo: timeRangeTo,
+  })
+  
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<maplibregl.Map | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -13,27 +23,66 @@ export const SensorMap = () => {
   // Default map center - Dresden
   const defaultCenter = { lat: 51.05, lng: 13.74 }
 
-  // Convert sensor stations to GeoJSON (memoized to prevent unnecessary recalculations)
-  const geojson = useMemo(() => ({
-    type: 'FeatureCollection' as const,
-    features: sensorStations
-      .filter(station => station.currentReading !== null)
-      .map(station => ({
-        type: 'Feature' as const,
-        geometry: {
-          type: 'Point' as const,
-          coordinates: station.coordinates,
-        },
+  // Calculate current reading for each sensor based on selectedTime (client-side)
+  const geojson = useMemo(() => {
+    if (!sensorData?.features) {
+      return { type: 'FeatureCollection' as const, features: [] }
+    }
+
+    // Group features by sensor ID
+    const sensorMap = new Map<string, SensorFeature[]>()
+    
+    sensorData.features.forEach(feature => {
+      const id = feature.properties.id
+      if (!sensorMap.has(id)) {
+        sensorMap.set(id, [])
+      }
+      sensorMap.get(id)!.push(feature)
+    })
+
+    // For each sensor, find the reading closest to selectedTime (or first reading)
+    const features = Array.from(sensorMap.entries()).map(([_id, sensorFeatures]) => {
+      // Sort by time
+      const sorted = sensorFeatures.sort((a, b) => 
+        new Date(a.properties.time).getTime() - new Date(b.properties.time).getTime()
+      )
+
+      let currentFeature: SensorFeature
+      
+      if (!selectedTime) {
+        // No time selected, use first reading
+        currentFeature = sorted[0]
+      } else {
+        // Find nearest reading to selected time
+        let nearestFeature = sorted[0]
+        let minDiff = Math.abs(new Date(sorted[0].properties.time).getTime() - selectedTime.getTime())
+        
+        for (const feature of sorted) {
+          const diff = Math.abs(new Date(feature.properties.time).getTime() - selectedTime.getTime())
+          if (diff < minDiff) {
+            minDiff = diff
+            nearestFeature = feature
+          }
+        }
+        
+        currentFeature = nearestFeature
+      }
+
+      // Map properties: 'v' → 'value' for map layer compatibility
+      return {
+        ...currentFeature,
         properties: {
-          id: station.id,
-          name: station.name,
-          description: station.description,
-          network: station.network,
-          ...(station.currentReading || {}),
-          time: station.currentReading!.time.toISOString(),
+          ...currentFeature.properties,
+          value: currentFeature.properties.v, // Map 'v' to 'value' for MapLibre layers
         },
-      })),
-  }), [sensorStations])
+      }
+    })
+
+    return {
+      type: 'FeatureCollection' as const,
+      features,
+    }
+  }, [sensorData, selectedTime])
 
   // Initialize map
   useEffect(() => {
