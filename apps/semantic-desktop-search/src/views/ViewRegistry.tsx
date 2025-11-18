@@ -4,6 +4,7 @@ import { ListView, listViewDefinition } from './ListView'
 import { GalleryView, galleryViewDefinition } from './GalleryView'
 import { MapView, mapViewDefinition } from './MapView'
 import { TimelineView, timelineViewDefinition } from './TimelineView'
+import { TimeSeriesView, timeSeriesViewDefinition } from './TimeSeriesView'
 
 interface ViewRegistryContextValue {
   views: Map<string, ViewRegistration>
@@ -25,6 +26,7 @@ const initialViews = new Map<string, ViewRegistration>([
   ['gallery', { definition: galleryViewDefinition, component: GalleryView }],
   ['map', { definition: mapViewDefinition, component: MapView }],
   ['timeline', { definition: timelineViewDefinition, component: TimelineView }],
+  ['timeseries', { definition: timeSeriesViewDefinition, component: TimeSeriesView }],
 ])
 
 export const ViewRegistry = ({ children }: ViewRegistryProps) => {

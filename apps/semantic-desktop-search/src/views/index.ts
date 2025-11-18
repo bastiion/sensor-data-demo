@@ -3,4 +3,5 @@ export { ListView } from './ListView'
 export { GalleryView } from './GalleryView'
 export { MapView } from './MapView'
 export { TimelineView } from './TimelineView'
+export { TimeSeriesView } from './TimeSeriesView'
 

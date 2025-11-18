@@ -29,9 +29,14 @@ const MosaicView = () => {
     direction: 'row',
     first: 'gallery',
     second: {
-      direction: 'row',
-      first: 'list',
-      second: 'map',
+      direction: 'column',
+      first: {
+        direction: 'row',
+        first: 'list',
+        second: 'map',
+        splitPercentage: 50,
+      },
+      second: 'timeseries',
       splitPercentage: 50,
     },
     splitPercentage: 40,
@@ -52,7 +57,13 @@ const MosaicView = () => {
       // Initialize instance if it doesn't exist
       if (!instance && !initializedTiles.has(tileId)) {
         const instanceId = uuid()
-        const defaultViewType = tileId === 'gallery' ? 'gallery' : tileId === 'list' ? 'list' : 'map'
+        // Map tileId to appropriate view type
+        let defaultViewType = 'list'
+        if (tileId === 'gallery') defaultViewType = 'gallery'
+        else if (tileId === 'list') defaultViewType = 'list'
+        else if (tileId === 'map') defaultViewType = 'map'
+        else if (tileId === 'timeline') defaultViewType = 'timeline'
+        else if (tileId === 'timeseries') defaultViewType = 'timeseries'
         
         dispatch(
           createInstance({
