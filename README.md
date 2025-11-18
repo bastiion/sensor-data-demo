@@ -1,44 +1,55 @@
-# Sensor Map Demo
+# Geospatial MapLibre Frontend Demo
 
-A clean, isolated sensor data visualization application.
+A monorepo for geospatial sensor data visualization with interactive mapping capabilities.
 
-## Features
+## Monorepo Structure
 
-- Interactive map showing sensor stations with temperature readings
-- Time-based slider to view sensor data at different points in time
-- Color-coded temperature markers (blue = cold, red = hot)
-- Sensor details on click
+This repository uses [Turborepo](https://turbo.build/) for centralized build and development workflows, and [Bun workspaces](https://bun.sh/docs/install/workspaces) for package management.
 
-## Tech Stack
+### Projects
 
-- **React 18** with TypeScript
-- **Zustand** for state management
-- **MapLibre GL** for map rendering
-- **Chakra UI** for UI components
-- **date-fns** for date handling
-- **Zod** for data validation
-- **Vite** for build tooling
+- **`apps/sensor-map`** - Frontend React application with MapLibre GL for interactive sensor data visualization
+  - Interactive map with time-based filtering
+  - Network and time range filtering
+  - See [`apps/sensor-map/README.md`](apps/sensor-map/README.md) for detailed documentation
+
+- **`apps/backend`** - Express.js API server for sensor data filtering and serving
+  - RESTful API endpoints for sensor data
+  - Time, network, and bounding box filtering
+  - See [`apps/backend/README.md`](apps/backend/README.md) for detailed documentation
+
+- **`apps/shared-schemas`** - Shared Zod schemas for type-safe data validation
+  - Used by both frontend and backend
+  - Ensures consistent data structures across the stack
+  - See [`apps/shared-schemas/README.md`](apps/shared-schemas/README.md) for detailed documentation
 
 ## Getting Started
 
 ```bash
-# Install dependencies
+# Install all dependencies
 bun install
 
-# Run development server
-bun dev
+# Run all projects in development mode
+bun run dev
 
-# Build for production
+# Build all projects
 bun run build
+
+# Start production servers
+bun run start
+
+# Preview production builds
+bun run preview
 ```
 
-## Data Source
+## Tech Stack
 
-The app loads sensor temperature data from `public/tryout_data.json`, which contains readings from multiple sensor stations in the Dresden area over a week-long period (April 23-29, 2024).
+- **Turborepo** - Monorepo build system
+- **Bun** - Package manager and runtime
+- **TypeScript** - Type safety across all projects
+- **Zod** - Schema validation (via shared-schemas)
+- **React 18** - Frontend framework
+- **Express** - Backend framework
+- **MapLibre GL** - Map rendering
 
-## Architecture
-
-- `src/sensor-data/store/` - Zustand store for state management
-- `src/sensor-data/components/` - React components
-- `src/lib/` - Schema definitions and utilities
-- `public/` - Static assets including sensor data
+For detailed information about each project's tech stack and features, see the respective README files in each project directory.
