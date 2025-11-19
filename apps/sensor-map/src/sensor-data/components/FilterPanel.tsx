@@ -4,7 +4,7 @@ import { useSensorStore } from '../store/useSensorStore'
 import { DateTimeRangeSlider } from './DateTimeRangeSlider'
 
 export const FilterPanel = () => {
-  const { selectedTime, setSelectedTime, resetFilters, dataBounds, sensorStations } = useSensorStore()
+  const { selectedTime, setSelectedTime, resetFilters, dataBounds, sensorStations, heatmapEnabled, toggleHeatmap } = useSensorStore()
 
   const handleTimeChange = (time: Date) => {
     setSelectedTime(time)
@@ -34,6 +34,21 @@ export const FilterPanel = () => {
               </Text>
             )}
           </Box>
+        </Box>
+
+        {/* Heatmap Toggle */}
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <Text fontSize="sm" fontWeight="medium">
+            Show Heatmap
+          </Text>
+          <Button
+            onClick={toggleHeatmap}
+            variant={heatmapEnabled ? 'solid' : 'outline'}
+            colorScheme="blue"
+            size="sm"
+          >
+            {heatmapEnabled ? 'ON' : 'OFF'}
+          </Button>
         </Box>
 
         {/* Time Point Slider */}

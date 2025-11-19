@@ -3,9 +3,10 @@ import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { Box } from '@chakra-ui/react'
 import { useSensorStore } from '../store/useSensorStore'
+import { useTemperatureHeatmap } from '../lib/heatmap/useTemperatureHeatmap'
 
 export const SensorMap = () => {
-  const { sensorStations } = useSensorStore()
+  const { sensorStations, selectedTime, heatmapEnabled } = useSensorStore()
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<maplibregl.Map | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -14,10 +15,17 @@ export const SensorMap = () => {
   const defaultCenter = { lat: 51.05, lng: 13.74 }
 
   // Convert sensor stations to GeoJSON (memoized to prevent unnecessary recalculations)
+  // When heatmap is enabled, filter out stations without currentReading (N/A stations)
   const geojson = useMemo(() => ({
     type: 'FeatureCollection' as const,
     features: sensorStations
-      .filter(station => station.currentReading !== null)
+      .filter(station => {
+        // Always filter out stations without currentReading
+        if (station.currentReading === null) return false
+        // When heatmap is enabled, only show stations with valid readings
+        if (heatmapEnabled && station.currentReading.value === null) return false
+        return true
+      })
       .map(station => ({
         type: 'Feature' as const,
         geometry: {
@@ -33,7 +41,22 @@ export const SensorMap = () => {
           time: station.currentReading!.time.toISOString(),
         },
       })),
-  }), [sensorStations])
+  }), [sensorStations, heatmapEnabled])
+
+  // Temperature heatmap hook - handles all heatmap logic
+  useTemperatureHeatmap(
+    isLoaded ? map.current : null,
+    sensorStations,
+    selectedTime,
+    heatmapEnabled,
+    {
+      gridResolution: 100,
+      maxDistanceKm: 30,
+      idwPower: 2,
+      colorRamp: { min: 0, max: 20 },
+      opacity: 0.7,
+    }
+  )
 
   // Initialize map
   useEffect(() => {
@@ -82,6 +105,7 @@ export const SensorMap = () => {
     })
 
     // Add circle layer with color based on temperature
+    // Circle visibility will be controlled by heatmap toggle
     mapInstance.addLayer({
       id: 'sensors-circle',
       type: 'circle',
@@ -175,8 +199,28 @@ export const SensorMap = () => {
     }
   }, [geojson, isLoaded])
 
+  // Update circle layer style when heatmap is toggled
+  useEffect(() => {
+    if (!map.current || !isLoaded) return
+
+    const mapInstance = map.current
+    const circleLayer = mapInstance.getLayer('sensors-circle')
+
+    if (circleLayer) {
+      if (heatmapEnabled) {
+        // Hide circles when heatmap is enabled, keep text visible
+        mapInstance.setPaintProperty('sensors-circle', 'circle-opacity', 0)
+        mapInstance.setPaintProperty('sensors-circle', 'circle-radius', 0)
+      } else {
+        // Show circles when heatmap is disabled
+        mapInstance.setPaintProperty('sensors-circle', 'circle-opacity', 0.8)
+        mapInstance.setPaintProperty('sensors-circle', 'circle-radius', 20)
+      }
+    }
+  }, [heatmapEnabled, isLoaded])
+
   return (
-    <Box height="100%" width="100%" overflow="hidden" bg="bg">
+    <Box height="100%" width="100%" overflow="hidden" bg="bg" position="relative">
       <div ref={mapContainer} style={{ height: '100%', width: '100%' }} />
     </Box>
   )
