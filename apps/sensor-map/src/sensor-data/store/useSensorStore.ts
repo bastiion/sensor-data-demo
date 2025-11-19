@@ -36,10 +36,12 @@ interface SensorState {
   
   // Filters
   selectedTime: Date | null
+  heatmapEnabled: boolean
   
   // Actions
   loadData: () => Promise<void>
   setSelectedTime: (time: Date | null) => void
+  toggleHeatmap: () => void
   resetFilters: () => void
 }
 
@@ -136,6 +138,7 @@ export const useSensorStore = create<SensorState>((set, get) => ({
   sensorStations: [],
   dataBounds: null,
   selectedTime: null,
+  heatmapEnabled: false,
   
   // Load data from JSON file
   loadData: async () => {
@@ -194,12 +197,17 @@ export const useSensorStore = create<SensorState>((set, get) => ({
     set({ selectedTime: time, sensorStations: updatedStations })
   },
   
+  // Toggle heatmap visibility
+  toggleHeatmap: () => {
+    set((state) => ({ heatmapEnabled: !state.heatmapEnabled }))
+  },
+  
   // Reset filters
   resetFilters: () => {
     const { sensorStations } = get()
     const updatedStations = updateCurrentReadings(sensorStations, null)
     
-    set({ selectedTime: null, sensorStations: updatedStations })
+    set({ selectedTime: null, sensorStations: updatedStations, heatmapEnabled: false })
   },
 }))
 
