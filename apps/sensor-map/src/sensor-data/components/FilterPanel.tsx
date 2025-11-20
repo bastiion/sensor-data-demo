@@ -1,11 +1,10 @@
 import { Box, Button, Stack, Text } from '@chakra-ui/react'
-import { format } from 'date-fns'
 import { useSensorStore } from '../store/useSensorStore'
 import { DateTimeRangeSlider } from './DateTimeRangeSlider'
 import { HeatmapControls } from './HeatmapControls'
 
 export const FilterPanel = () => {
-  const { selectedTime, setSelectedTime, resetFilters, dataBounds, sensorStations, heatmapEnabled, toggleHeatmap, useShaderInterpolation, toggleShaderInterpolation } = useSensorStore()
+  const { setSelectedTime, resetFilters, dataBounds, sensorStations, heatmapEnabled, toggleHeatmap, useShaderInterpolation, toggleShaderInterpolation } = useSensorStore()
 
   const handleTimeChange = (time: Date) => {
     setSelectedTime(time)
@@ -21,21 +20,25 @@ export const FilterPanel = () => {
   return (
     <Box bg="bg.subtle" p={4} borderBottom="1px solid" borderColor="border">
       <Stack gap={4}>
+        {/* Header */}
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Text fontSize="lg" fontWeight="semibold">
             Sensor Data Viewer
           </Text>
-          <Box textAlign="right">
-            <Text fontSize="sm" color="fg.muted">
-              {sensorsWithReadings} / {sensorStations.length} stations with data
-            </Text>
-            {selectedTime && (
-              <Text fontSize="xs" color="blue.500">
-                {format(selectedTime, 'MMM dd, yyyy HH:mm')}
-              </Text>
-            )}
-          </Box>
+          <Text fontSize="sm" color="fg.muted">
+            {sensorsWithReadings} / {sensorStations.length} stations
+          </Text>
         </Box>
+
+        {/* Time Point Slider - at the top */}
+        {dataBounds && (
+          <Box>
+            <Text fontSize="sm" fontWeight="medium" mb={2}>
+              Time:
+            </Text>
+            <DateTimeRangeSlider onTimeChange={handleTimeChange} />
+          </Box>
+        )}
 
         {/* Heatmap Toggle */}
         <Box display="flex" alignItems="center" justifyContent="space-between">
@@ -71,16 +74,6 @@ export const FilterPanel = () => {
 
         {/* Heatmap Controls - only visible when heatmap is enabled */}
         {heatmapEnabled && <HeatmapControls />}
-
-        {/* Time Point Slider */}
-        {dataBounds && (
-          <Box>
-            <Text fontSize="sm" fontWeight="medium" mb={2}>
-              Select Time Point:
-            </Text>
-            <DateTimeRangeSlider onTimeChange={handleTimeChange} />
-          </Box>
-        )}
 
         {/* Reset Button */}
         <Box display="flex" justifyContent="flex-end">

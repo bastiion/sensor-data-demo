@@ -21,6 +21,7 @@ export class TemperatureHeatmapLayer implements CustomLayerInterface {
   private map: MaplibreMap | null = null
   private currentMatrix: any = null
   private currentTextureData: Uint8Array | null = null
+  private currentGridData: Float32Array | null = null // Store raw temperature data for re-encoding
 
   constructor(
     gridSize: number,
@@ -209,14 +210,10 @@ export class TemperatureHeatmapLayer implements CustomLayerInterface {
   }
 
   /**
-   * Update the texture with new grid data
-   * Converts Float32Array temperature data to RGBA Uint8Array format
+   * Encode temperature grid data to RGBA texture format
+   * Uses current color ramp for normalization
    */
-  updateTexture(gridData: Float32Array): void {
-    if (!this.regl) return
-
-    // Convert Float32Array to RGBA Uint8Array
-    // Encode temperature into red channel (0-255) and hasData flag in alpha channel
+  private encodeGridToTexture(gridData: Float32Array): Uint8Array {
     const rgbaData = new Uint8Array(this.gridSize * this.gridSize * 4)
     
     for (let i = 0; i < gridData.length; i++) {
@@ -241,9 +238,22 @@ export class TemperatureHeatmapLayer implements CustomLayerInterface {
         rgbaData[i * 4 + 3] = 0 // Alpha = 0 means no data
       }
     }
+    
+    return rgbaData
+  }
 
-    // Store the texture data - it will be recreated on every render
-    this.currentTextureData = rgbaData
+  /**
+   * Update the texture with new grid data
+   * Converts Float32Array temperature data to RGBA Uint8Array format
+   */
+  updateTexture(gridData: Float32Array): void {
+    if (!this.regl) return
+
+    // Store raw grid data for potential re-encoding (e.g., when color ramp changes)
+    this.currentGridData = gridData
+
+    // Encode grid data to texture format using current color ramp
+    this.currentTextureData = this.encodeGridToTexture(gridData)
 
     // Trigger map repaint to show the updated texture
     if (this.map) {
@@ -253,9 +263,16 @@ export class TemperatureHeatmapLayer implements CustomLayerInterface {
 
   /**
    * Update color ramp configuration
+   * Re-encodes texture data with new color range
    */
   updateColorRamp(colorRamp: ColorRampConfig): void {
     this.colorRamp = colorRamp
+    
+    // Re-encode texture with new color ramp if we have grid data
+    if (this.currentGridData) {
+      this.currentTextureData = this.encodeGridToTexture(this.currentGridData)
+    }
+    
     if (this.map) {
       this.map.triggerRepaint()
     }
