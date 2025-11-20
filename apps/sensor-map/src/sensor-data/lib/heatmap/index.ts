@@ -5,6 +5,7 @@
 
 export { useTemperatureHeatmap } from './useTemperatureHeatmap'
 export { TemperatureHeatmapLayer } from './TemperatureHeatmapLayer'
+export { TemperatureHeatmapShaderLayer } from './TemperatureHeatmapShaderLayer'
 export { calculateBounds, interpolateGrid, type InterpolationOptions } from './interpolate'
 export type {
   GeographicBounds,

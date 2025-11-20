@@ -49,9 +49,11 @@ export const DateTimeRangeSlider = ({ onTimeChange }: DateTimeRangeSliderProps) 
     setSliderValue(value)
     const newDate = minutesToDate(value, dataBounds.minTime)
     setCurrentDate(newDate)
+    onTimeChange(newDate)
   }
 
   const handleChangeEnd = (value: number) => {
+    // No longer needed since handleChange now updates, but keep for final confirmation
     const newDate = minutesToDate(value, dataBounds.minTime)
     onTimeChange(newDate)
   }

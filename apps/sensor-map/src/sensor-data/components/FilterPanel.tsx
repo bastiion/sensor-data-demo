@@ -2,9 +2,10 @@ import { Box, Button, Stack, Text } from '@chakra-ui/react'
 import { format } from 'date-fns'
 import { useSensorStore } from '../store/useSensorStore'
 import { DateTimeRangeSlider } from './DateTimeRangeSlider'
+import { HeatmapControls } from './HeatmapControls'
 
 export const FilterPanel = () => {
-  const { selectedTime, setSelectedTime, resetFilters, dataBounds, sensorStations, heatmapEnabled, toggleHeatmap } = useSensorStore()
+  const { selectedTime, setSelectedTime, resetFilters, dataBounds, sensorStations, heatmapEnabled, toggleHeatmap, useShaderInterpolation, toggleShaderInterpolation } = useSensorStore()
 
   const handleTimeChange = (time: Date) => {
     setSelectedTime(time)
@@ -50,6 +51,26 @@ export const FilterPanel = () => {
             {heatmapEnabled ? 'ON' : 'OFF'}
           </Button>
         </Box>
+
+        {/* GPU Interpolation Toggle - only visible when heatmap is enabled */}
+        {heatmapEnabled && (
+          <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Text fontSize="sm" fontWeight="medium">
+              Use GPU Interpolation
+            </Text>
+            <Button
+              onClick={toggleShaderInterpolation}
+              variant={useShaderInterpolation ? 'solid' : 'outline'}
+              colorScheme="green"
+              size="sm"
+            >
+              {useShaderInterpolation ? 'ON' : 'OFF'}
+            </Button>
+          </Box>
+        )}
+
+        {/* Heatmap Controls - only visible when heatmap is enabled */}
+        {heatmapEnabled && <HeatmapControls />}
 
         {/* Time Point Slider */}
         {dataBounds && (

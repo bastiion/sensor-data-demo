@@ -6,7 +6,7 @@ import { useSensorStore } from '../store/useSensorStore'
 import { useTemperatureHeatmap } from '../lib/heatmap/useTemperatureHeatmap'
 
 export const SensorMap = () => {
-  const { sensorStations, selectedTime, heatmapEnabled } = useSensorStore()
+  const { sensorStations, selectedTime, heatmapEnabled, useShaderInterpolation } = useSensorStore()
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<maplibregl.Map | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -49,13 +49,7 @@ export const SensorMap = () => {
     sensorStations,
     selectedTime,
     heatmapEnabled,
-    {
-      gridResolution: 100,
-      maxDistanceKm: 30,
-      idwPower: 2,
-      colorRamp: { min: 0, max: 20 },
-      opacity: 0.7,
-    }
+    useShaderInterpolation
   )
 
   // Initialize map

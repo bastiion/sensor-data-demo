@@ -37,11 +37,13 @@ interface SensorState {
   // Filters
   selectedTime: Date | null
   heatmapEnabled: boolean
+  useShaderInterpolation: boolean
   
   // Actions
   loadData: () => Promise<void>
   setSelectedTime: (time: Date | null) => void
   toggleHeatmap: () => void
+  toggleShaderInterpolation: () => void
   resetFilters: () => void
 }
 
@@ -139,6 +141,7 @@ export const useSensorStore = create<SensorState>((set, get) => ({
   dataBounds: null,
   selectedTime: null,
   heatmapEnabled: false,
+  useShaderInterpolation: false,
   
   // Load data from JSON file
   loadData: async () => {
@@ -200,6 +203,11 @@ export const useSensorStore = create<SensorState>((set, get) => ({
   // Toggle heatmap visibility
   toggleHeatmap: () => {
     set((state) => ({ heatmapEnabled: !state.heatmapEnabled }))
+  },
+  
+  // Toggle shader interpolation mode
+  toggleShaderInterpolation: () => {
+    set((state) => ({ useShaderInterpolation: !state.useShaderInterpolation }))
   },
   
   // Reset filters

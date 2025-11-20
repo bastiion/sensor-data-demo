@@ -146,18 +146,27 @@ export class TemperatureHeatmapLayer implements CustomLayerInterface {
 
       count: 6,
 
+      // Alpha blending configuration for semi-transparent heatmap overlay
       blend: {
-        enable: true,
+        enable: true, // Enable blending to allow transparency
         func: {
-          srcRGB: 'src alpha',
-          srcAlpha: 1,
-          dstRGB: 'one minus src alpha',
-          dstAlpha: 1,
+          // RGB blending: standard alpha compositing formula
+          srcRGB: 'src alpha',           // Multiply source color by source alpha (pre-multiplied alpha)
+          dstRGB: 'one minus src alpha', // Multiply destination color by (1 - source alpha)
+          // Result: finalRGB = sourceRGB * sourceAlpha + destRGB * (1 - sourceAlpha)
+          // This creates smooth transparency blending with map layers below
+          
+          // Alpha blending: preserve both source and destination alpha
+          srcAlpha: 1,                   // Keep source alpha as-is (no modification)
+          dstAlpha: 1,                   // Keep destination alpha as-is
+          // This maintains proper alpha channel for further compositing
         },
       },
 
+      // Depth testing configuration
       depth: {
-        enable: false,
+        enable: false, // Disable depth testing - heatmap is always rendered as overlay
+        // We want the heatmap to appear on top of the map, not interact with 3D terrain depth
       },
     })
   }
