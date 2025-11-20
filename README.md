@@ -1,6 +1,15 @@
 # Sensor Map Demo
 
-A clean, isolated sensor data visualization application.
+![Build Status](https://github.com/bastiion/sensor-data-demo/actions/workflows/main.yml/badge.svg)
+
+> **Note:** This repository has 3 branches:
+> - The state of the main application from 2025-11-18 in the [2025-11-18 branch](https://github.com/bastiion/sensor-data-demo/tree/2025-11-18)
+> - The state of the main application API versions in the [api branch](https://github.com/bastiion/sensor-data-demo/tree/api)
+> - The [heatmap version](https://github.com/bastiion/sensor-data-demo/tree/heatmap) which is currently the main branch
+
+An isolated sensor data visualization application.
+
+![Sensor Data Viewer with Heatmap](screenshot_with_heatmap.png)
 
 ## Features
 
