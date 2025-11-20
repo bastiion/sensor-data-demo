@@ -59,7 +59,7 @@ export const SensorMap = () => {
         container: mapContainer.current,
         style: 'https://tile-1.kartenforum.slub-dresden.de/styles/maptiler-basic-v2/style.json',
         center: [defaultCenter.lng, defaultCenter.lat],
-        zoom: 10,
+        zoom: 11,
       })
 
       map.current.on('load', () => {

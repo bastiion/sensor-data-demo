@@ -166,7 +166,7 @@ export function useTemperatureHeatmap(
       const gridData = interpolateGrid(stationsAtTime, interpolationOptions)
       layerRef.current.updateTexture(gridData)
     }
-  }, [selectedTime, stations, interpolationOptions, enabled, useShaderLayer])
+  }, [selectedTime, stations, interpolationOptions, colorRamp, enabled, useShaderLayer])
 
   return layerRef.current
 }

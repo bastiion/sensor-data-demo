@@ -19,9 +19,9 @@ interface HeatmapStore extends HeatmapSettings {
 
 const defaultSettings: HeatmapSettings = {
   maxDistanceKm: 50,
-  idwPower: 2.0,
-  colorRampMin: -10,
-  colorRampMax: 40,
+  idwPower: 3.0,
+  colorRampMin: 0,
+  colorRampMax: 20,
   opacity: 0.6,
 }
 
