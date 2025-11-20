@@ -1,6 +1,5 @@
 # Sensor Map Demo
-
-![Build Status](https://github.com/bastiion/sensor-data-demo/actions/workflows/main.yml/badge.svg)
+[![Deploy to GitHub Pages](https://github.com/bastiion/sensor-data-demo/actions/workflows/deploy.yml/badge.svg)](https://github.com/bastiion/sensor-data-demo/actions/workflows/deploy.yml)
 
 > **Note:** This repository has 3 branches:
 > - The state of the main application from 2025-11-18 in the [2025-11-18 branch](https://github.com/bastiion/sensor-data-demo/tree/2025-11-18)
